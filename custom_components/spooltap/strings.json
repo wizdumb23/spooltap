@@ -8,13 +8,23 @@
           "host": "Bambuddy URL",
           "api_token": "API key (optional)"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure SpoolTap",
+        "description": "Point SpoolTap at a new Bambuddy URL (for example after moving Bambuddy to another host). Your slot tags and dashboard are kept.",
+        "data": {
+          "host": "Bambuddy URL",
+          "api_token": "API key (optional — required only if Bambuddy authentication is on)"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Cannot connect to Bambuddy at that URL."
+      "cannot_connect": "Cannot connect to Bambuddy at that URL.",
+      "invalid_auth": "Bambuddy rejected the request (401/403). Its authentication is on: enter an API key with the 'can_read_status' and 'can_manage_inventory' scopes."
     },
     "abort": {
-      "already_configured": "This Bambuddy is already configured."
+      "already_configured": "This Bambuddy is already configured.",
+      "reconfigure_successful": "SpoolTap now points at the new Bambuddy URL."
     }
   }
 }

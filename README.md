@@ -79,8 +79,13 @@ dashboard uses them for its styling.
 ### 2. Connect it to Bambuddy
 
 **Settings → Devices & Services → Add Integration → SpoolTap** → enter your Bambuddy base URL
-(e.g. `http://<bambuddy-host>:8000`, no trailing path — Bambuddy needs no auth token by
-default).
+(e.g. `http://<bambuddy-host>:8000`, no trailing path). Bambuddy's authentication is off by
+default, so the API key field can stay empty. If you have turned Bambuddy authentication **on**,
+create an API key in Bambuddy with the **`can_read_status`** and **`can_manage_inventory`**
+scopes (a key can only carry permissions its owner has) and paste it into the API key field.
+
+**Moved Bambuddy to another host?** Settings → Devices & Services → SpoolTap → ⋮ →
+**Reconfigure** → enter the new URL. Your slot tags, entities, and dashboard are kept.
 
 Done. The **SpoolTap** dashboard appears in the sidebar on its own — the integration ships the
 engine (services, sensors, the persisted slot→tag registry), the workflow (native `spooltap_*`
@@ -105,6 +110,7 @@ printer is reachable. You're live.
 | Symptom | Fix |
 |---|---|
 | `cannot_connect` when adding the integration | Your HA host can't reach the Bambuddy URL — it's a networking problem, not a SpoolTap one. Test from HA's network: `curl http://<bambuddy-host>:8000/api/v1/printers/`. |
+| `invalid_auth` when adding or reconfiguring | Bambuddy answered 401/403: its authentication is on and the key is missing, wrong, or lacks the `can_read_status` / `can_manage_inventory` scopes. Create a key in Bambuddy → Settings → API keys with both scopes. |
 | Notification about **Spoolman sync being ON** | Turn it off in Bambuddy → Settings → Filament. That toggle is Bambuddy's own consumption sync — turning it off does not disturb a separate Spoolman install. |
 | Dashboard missing / broken / deleted | Run the `spooltap.install_dashboard` service with `force: true` — it restores the shipped layout. |
 | Scans do nothing | Confirm the HA companion app fires `tag_scanned` (Settings → Tags shows the scans), and check the status card — unknown tags say so and point you to Bind mode. |

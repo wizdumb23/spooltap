@@ -32,7 +32,9 @@ is read.
    **Integration** → install **SpoolTap** → **restart Home Assistant**.
 2. Settings → Devices & Services → **Add Integration** → **SpoolTap** → enter your Bambuddy
    URL. `cannot_connect` means your HA box can't reach Bambuddy — that's a networking fix
-   before anything else (Bambuddy needs no auth token by default).
+   before anything else. Bambuddy's authentication is off by default, so the API key field
+   can stay empty; with authentication **on**, `invalid_auth` means you need a Bambuddy API
+   key carrying the `can_read_status` and `can_manage_inventory` scopes.
 3. Done. The **SpoolTap** dashboard appears in the sidebar (auto-created; if you ever delete
    or break it, run the `spooltap.install_dashboard` service — `force: true` restores the
    shipped layout). Spool tags already bound in Bambuddy resolve immediately.
@@ -99,6 +101,27 @@ from the certified value.
 **Reconciliation marker.** Each weigh stamps `last_weighed_at`. After a full weigh-pass, any *active*
 spool still showing `last_weighed_at = null` is one you never physically handled → an archive
 shortlist candidate.
+
+---
+
+## Moving Bambuddy to another host (0.3.3+)
+
+SpoolTap only knows Bambuddy by the URL you entered, so nothing about *where* Bambuddy runs
+matters — HA add-on, Docker, Pi, NAS. When that URL changes (for example Bambuddy leaves the
+HA add-on for a Docker host), re-point the integration in place:
+
+1. Wait until the new Bambuddy answers: `curl http://<new-host>:8000/api/v1/printers/`.
+2. Settings → Devices & Services → **SpoolTap** → ⋮ → **Reconfigure** → enter the new URL
+   (and an API key if Bambuddy authentication is on) → Submit.
+3. The entry reloads. Check `sensor.spooltap_slots` still shows your bound slot tags.
+
+Reconfigure keeps the config entry, so the slot→tag registry, the entities, and the dashboard
+all survive. Deleting and re-adding the integration instead keeps the entities and dashboard
+but **loses the slot registry** (it is stored per config entry) — you would have to re-bind
+every slot tag. Pre-0.3.3 installs have no Reconfigure menu item: update SpoolTap first.
+
+Use plain `http://host:8000` unless you run a TLS proxy with a certificate HA trusts —
+Bambuddy itself serves plain HTTP.
 
 ---
 
