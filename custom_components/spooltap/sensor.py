@@ -75,7 +75,13 @@ class SlotsSensor(CoordinatorEntity[SpoolTapCoordinator], SensorEntity):
     def extra_state_attributes(self) -> dict:
         st = self.coordinator.slot_tags
         slots = [{**s, "tag_uid": st.get(s["key"])} for s in self.coordinator.slots]
-        return {"slots": slots, "bound": sum(1 for s in slots if s["tag_uid"])}
+        return {
+            "printer_id": self.coordinator.printer_id,
+            "printer": self.coordinator.active_printer_label(),
+            "printers": self.coordinator.printer_labels(),
+            "slots": slots,
+            "bound": sum(1 for s in slots if s["tag_uid"]),
+        }
 
 
 class StatusSensor(SpoolTapFlowEntity, SensorEntity):

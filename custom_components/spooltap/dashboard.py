@@ -71,6 +71,21 @@ _VARS_CSS = (
     "--mdc-select-ink-color: #fff; "
     "--mdc-select-label-ink-color: rgba(255,255,255,0.6); "
     "--mdc-select-dropdown-icon-color: rgba(255,255,255,0.6); "
+    # the dropdown menu / list surface: under a LIGHT HA theme this stays the theme's
+    # white while the text above is forced white -> unreadable (#5). Pin the surface
+    # and its on-surface text so the popup is dark regardless of theme.
+    "--mdc-theme-surface: #141a2e; "
+    "--mdc-theme-on-surface: #fff; "
+    "--mdc-theme-text-primary-on-background: #fff; "
+    "--mdc-theme-text-secondary-on-background: rgba(255,255,255,0.6); "
+    "--mdc-theme-text-icon-on-background: rgba(255,255,255,0.6); "
+    "--mdc-ripple-color: #fff; "
+    "--card-background-color: #141a2e; "
+    "--ha-card-background: #141a2e; "
+    "--input-fill-color: rgba(255,255,255,0.06); "
+    "--input-ink-color: #fff; "
+    "--input-label-ink-color: rgba(255,255,255,0.6); "
+    "--input-dropdown-icon-color: rgba(255,255,255,0.6); "
 )
 # button-card style list form of the same glass surface
 _GLASS_STYLES: list[dict[str, str]] = [
@@ -508,6 +523,7 @@ _ASSIGN_CARDS: list[dict[str, Any]] = [
     {
         "type": "entities",
         "entities": [
+            {"entity": "select.spooltap_printer", "name": "Printer"},
             {"entity": "select.spooltap_assign_slot", "name": "Slot"},
             {"entity": "select.spooltap_assign_brand", "name": "Brand"},
             {"entity": "select.spooltap_assign_type", "name": "Type"},
@@ -564,7 +580,10 @@ _BIND_CARDS: list[dict[str, Any]] = [
     ),
     {
         "type": "entities",
-        "entities": [{"entity": "select.spooltap_bind_slot", "name": "Slot"}],
+        "entities": [
+            {"entity": "select.spooltap_printer", "name": "Printer"},
+            {"entity": "select.spooltap_bind_slot", "name": "Slot"},
+        ],
         "title": "Bind tag → slot",
         "card_mod": _glass_mod(),
     },

@@ -70,14 +70,14 @@ CREATE_SCHEMA = vol.Schema(
 ASSIGN_SCHEMA = vol.Schema(
     {
         vol.Required("spool_id"): vol.Coerce(int),
-        vol.Optional("printer_id"): vol.Coerce(int),  # default: BB's first printer
+        vol.Optional("printer_id"): vol.Coerce(int),  # default: the active printer
         vol.Required("ams_id"): vol.Coerce(int),
         vol.Required("tray_id"): vol.Coerce(int),
     }
 )
 UNASSIGN_SCHEMA = vol.Schema(
     {
-        vol.Optional("printer_id"): vol.Coerce(int),  # default: BB's first printer
+        vol.Optional("printer_id"): vol.Coerce(int),  # default: the active printer
         vol.Required("ams_id"): vol.Coerce(int),
         vol.Required("tray_id"): vol.Coerce(int),
     }
@@ -197,7 +197,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
     async def assign_slot(call: ServiceCall) -> ServiceResponse:
         coordinator = _coordinator(hass)
         printer_id = call.data.get("printer_id")
-        if printer_id is None:  # auto-derived from BB (portable: no hardcoded id)
+        if printer_id is None:  # the active printer (select.spooltap_printer)
             printer_id = coordinator.printer_id
         result = await coordinator.relocate_assign(
             call.data["spool_id"],

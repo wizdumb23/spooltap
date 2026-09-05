@@ -104,7 +104,7 @@ assign_slot:
           min: 1
     printer_id:
       name: Printer ID
-      description: Optional; defaults to the printer auto-derived from Bambuddy.
+      description: Optional; defaults to the active printer (select.spooltap_printer).
       example: 1
       selector:
         number:
@@ -131,7 +131,7 @@ unassign_slot:
   fields:
     printer_id:
       name: Printer ID
-      description: Optional; defaults to the printer auto-derived from Bambuddy.
+      description: Optional; defaults to the active printer (select.spooltap_printer).
       selector:
         number:
           mode: box

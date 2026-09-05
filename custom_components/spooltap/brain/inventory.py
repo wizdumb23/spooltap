@@ -166,11 +166,13 @@ def parse_ams(status: dict | None) -> dict[tuple[int, int], TrayState]:
     active_ext = status.get("active_extruder")
     tray_now = status.get("tray_now")
 
-    def _add(ams_id: int, tray: dict) -> None:
-        tid = _i(tray.get("id") if tray.get("id") is not None else tray.get("tray_id"))
+    def _add(ams_id: int, tray: dict, *, tid: int | None = None, gid: int | None = None) -> None:
+        if tid is None:
+            tid = _i(tray.get("id") if tray.get("id") is not None else tray.get("tray_id"))
         if tid is None:
             return
-        gid = ams_id if ams_id >= 128 else ams_id * 4 + tid
+        if gid is None:
+            gid = ams_id if ams_id >= 128 else ams_id * 4 + tid
         active = str(tray_now) == str(gid) if tray_now is not None else False
         out[(ams_id, tid)] = TrayState(
             ams_id=ams_id,
@@ -189,18 +191,51 @@ def parse_ams(status: dict | None) -> dict[tuple[int, int], TrayState]:
         for tray in unit.get("tray", []) or unit.get("trays", []) or []:
             if isinstance(tray, dict):
                 _add(ams_id, tray)
-    for vt in status.get("vt_tray", []) if isinstance(status.get("vt_tray"), list) else []:
-        if isinstance(vt, dict):
-            _add(255, vt)
+    # external feed(s): BB's global tray id is 254 (Ext-L / the only external) or 255
+    # (Ext-R on dual-nozzle printers); the assignment contract is ams 255 + tray id-254
+    for tray_id, _label, raw in external_feeds(status):
+        _add(255, raw, tid=tray_id, gid=254 + tray_id)
     _ = active_ext  # reserved for dual-nozzle active-tray refinement
     return out
+
+
+def external_feeds(status: dict | None) -> list[tuple[int, str, dict]]:
+    """The external spool holder(s) BB reports -> [(tray_id, label, raw_entry)].
+
+    BB emits `vt_tray` as a LIST: id 254 = Ext-L (or the single external holder),
+    id 255 = Ext-R (dual-nozzle H2 series). Assignments address them as
+    `ams_id=255, tray_id=id-254` (BB inventory route), so that is the tray id here.
+    Entries without an id fall back to their position. One entry -> "External";
+    two -> "Ext-L" / "Ext-R".
+    """
+    if not isinstance(status, dict):
+        return []
+    raw_list = status.get("vt_tray")
+    if isinstance(raw_list, dict):  # very old single-object shape
+        raw_list = [raw_list]
+    if not isinstance(raw_list, list):
+        return []
+    feeds: list[tuple[int, dict]] = []
+    for idx, vt in enumerate(raw_list):
+        if not isinstance(vt, dict):
+            continue
+        raw_id = _i(vt.get("id"))
+        tray_id = raw_id - 254 if raw_id is not None and raw_id >= 254 else idx
+        if tray_id in (0, 1) and all(t != tray_id for t, _ in feeds):
+            feeds.append((tray_id, vt))
+    feeds.sort(key=lambda f: f[0])
+    if len(feeds) == 1:
+        return [(feeds[0][0], "External", feeds[0][1])]
+    names = {0: "Ext-L", 1: "Ext-R"}
+    return [(t, names[t], vt) for t, vt in feeds]
 
 
 def derive_slots(status: dict | None, labels: dict | None) -> list[dict]:
     """Auto-derive the AMS slot layout from BB (labels included) — no hardcoding.
 
     Returns [{key:'<ams>_<tray>', ams_id, tray_id, label}] for every tray BB reports,
-    plus the external feed (ams 255). BB caches the layout, so this works offline.
+    plus the external feed(s) (ams 255; Ext-L/Ext-R on dual-nozzle). BB caches the layout,
+    so this works offline.
     """
     slots: list[dict] = []
     if not isinstance(status, dict):
@@ -219,6 +254,6 @@ def derive_slots(status: dict | None, labels: dict | None) -> list[dict]:
                 continue
             slots.append({"key": f"{ams_id}_{tid}", "ams_id": ams_id, "tray_id": tid,
                           "label": f"{label} · Tray {tid + 1}"})
-    if status.get("vt_tray"):
-        slots.append({"key": "255_0", "ams_id": 255, "tray_id": 0, "label": "External"})
+    for tray_id, label, _raw in external_feeds(status):
+        slots.append({"key": f"255_{tray_id}", "ams_id": 255, "tray_id": tray_id, "label": label})
     return slots

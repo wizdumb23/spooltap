@@ -64,6 +64,7 @@ BASE_MATERIALS = [
 # select key -> placeholder (the fallback when a selection disappears from options)
 PLACEHOLDERS: dict[str, str] = {
     "mode": "Assign",
+    "printer": "No printers",
     "assign_slot": "Select…",
     "assign_brand": "Any",
     "assign_type": "Any",
@@ -246,6 +247,15 @@ class SpoolTapFlows:
         """A select view changed. Side effects mirror the package automations:
         mode away from Bind -> bind mode off; facet change -> re-narrow;
         Modify open pickers -> load the spool."""
+        if key == "printer":
+            pid = self.coordinator.printer_id_for_label(option)
+            if pid is not None and pid != self.coordinator.printer_id:
+                self._clear_pending()  # a pending slot belongs to the old printer
+                await self.coordinator.async_set_active_printer(pid)
+                self._set_status("Info", f"Active printer: {option}")
+            self._recompute_options()
+            self._notify()
+            return
         self.selections[key] = option
         if key == "mode" and option != "Bind":
             self.bind_mode = False  # port of stv2_bind_mode_autooff
@@ -769,6 +779,12 @@ class SpoolTapFlows:
         spools = self._spools_snapshot()
         opts = self.options
         opts["mode"] = MODE_OPTIONS
+        # the active-printer picker mirrors the coordinator (single source of truth)
+        labels = self.coordinator.printer_labels()
+        opts["printer"] = labels or [PLACEHOLDERS["printer"]]
+        self.selections["printer"] = (
+            self.coordinator.active_printer_label() or opts["printer"][0]
+        )
         opts["bind_pool"] = BIND_POOL_OPTIONS
         pool = self.selections["bind_pool"]
         bindset = [

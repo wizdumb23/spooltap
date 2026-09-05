@@ -19,6 +19,7 @@ from .flows import PLACEHOLDERS, SpoolTapFlows
 
 # key, name, icon (ported from the stv2_* input_selects)
 SELECTS: list[tuple[str, str, str]] = [
+    ("printer", "Printer", "mdi:printer-3d"),  # the active printer (multi-printer BB)
     ("assign_slot", "Assign slot", "mdi:tray-arrow-down"),
     ("assign_brand", "Assign brand", "mdi:factory"),
     ("assign_type", "Assign type", "mdi:texture"),

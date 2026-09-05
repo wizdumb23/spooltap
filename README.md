@@ -47,6 +47,30 @@ native inventory.
 - **Nothing is ever written to an NFC tag** — only the factory UID is read. Any NTAG-style
   sticker works.
 
+## Who writes spool weight (and who doesn't)
+
+SpoolTap writes a spool's weight in exactly one place: the **Modify** tab, when you press
+**Save** with a gross scale reading (or an edited net weight). Scanning a tag never writes
+anything; it only reads the spool and shows its name and remaining grams.
+
+If a remaining weight changes on its own, that is Bambuddy's **AMS auto sync**: on every
+status report from the printer it updates the remaining % of the spool assigned to each AMS
+tray from the AMS's own estimate. It skips spools whose weight is **locked**. Any explicit
+weight edit locks the spool, and SpoolTap's Modify > Save does that for you, so a spool you
+have weighed once is never overwritten by the AMS estimate again (per print usage tracking
+keeps deducting). To stop the sync for every spool, turn it off in Bambuddy's settings.
+
+## Multiple printers and dual external feeds
+
+- **Active printer** (0.4.0): the dashboard's **Printer** picker (`select.spooltap_printer`)
+  chooses which of your Bambuddy printers SpoolTap works on. Slots, slot tags, the pickers,
+  and the two tap flow all follow the active printer, and each printer keeps its own slot
+  tags. The choice survives restarts. With one printer nothing changes.
+- **Ext-L / Ext-R** (0.4.0): dual nozzle printers (H2 series) show both external holders as
+  slots; single nozzle printers keep the one **External** slot.
+- Existing dashboards do not gain the Printer row by themselves: run the
+  `spooltap.install_dashboard` service with `force: true` once after updating.
+
 ## Screenshots
 
 *(coming soon)*
