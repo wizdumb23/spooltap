@@ -8,7 +8,7 @@ committed or pushed.
 
 ## What this is
 
-SpoolTap is a HACS custom integration for Home Assistant (domain `spooltap`,
+SpoolTap (V2) is a HACS custom integration for Home Assistant (domain `spooltap`,
 `integration_type: hub`, `iot_class: local_polling`) that adds phone-NFC
 filament tracking on top of a Bambuddy instance. See README.md for the full
 feature set and DEPLOY.md for install/upgrade instructions.
